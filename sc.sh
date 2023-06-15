@@ -14,9 +14,16 @@ dump_site () {
 		echo "error: dumping $url failed"
 		return
 	fi
+	test "$output" == "" && return
 	sqlite3 sql.db "UPDATE urls SET dumped = '1' WHERE id = '${2}';"
 	while IFS= read -r url; do
-		sqlite3 sql.db "INSERT INTO urls (url) VALUES ('${url}');"
+		c=$(sqlite3 sql.db "SELECT count(*) FROM urls WHERE url = '${url}';")
+		if test "$c" == "0"; then
+			sqlite3 sql.db "INSERT INTO urls (url) VALUES ('${url}');"
+		else
+			c=$(($c + 1))
+			sqlite3 sql.db "UPDATE urls SET referenced = '${c}' WHERE url = '${url}';"
+		fi
 	done <<< "$output"
 }
 sc_init () {
