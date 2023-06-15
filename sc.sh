@@ -17,7 +17,7 @@ dump_site () {
 	test "$output" == "" && return
 	sqlite3 sql.db "UPDATE urls SET dumped = '1' WHERE id = '${2}';"
 	while IFS= read -r url; do
-		furl=$(echo $url | sed "s/'/''/g")
+		furl=$(echo ${url} | awk -F '?' '{print $1}' | sed -e 's/\/[^/]*\.php//' -e "s/'/''/g")
 		c=$(sqlite3 sql.db "SELECT count(*) FROM urls WHERE url = '${furl}';")
 		if test "$c" == "0"; then
 			sqlite3 sql.db "INSERT INTO urls (url) VALUES ('${furl}');"
@@ -37,7 +37,7 @@ sc_init () {
 			dumped BOOLEAN DEFAULT '0',
 			referenced INTEGER DEFAULT '1'
 		);"
-		furl=$(echo $1 | sed "s/'/''/g")
+		furl=$(echo ${1} | awk -F '?' '{print $1}' | sed -e 's/\/[^/]*\.php//' -e "s/'/''/g")
 		sqlite3 sql.db "INSERT INTO urls (url, referenced) VALUES ('${1}', '0');"
 	fi
 }
