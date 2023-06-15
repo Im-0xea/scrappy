@@ -37,13 +37,12 @@ sc_init "$1"
 
 while :
 do
-	echo false > cond
-	sqlite3 -csv sql.db "SELECT id, url FROM urls WHERE dumped = 0;" | while IFS=, read -r id url; do
-		test "$url" == "" && break
+	to_dump=$(sqlite3 -csv sql.db "SELECT id, url FROM urls WHERE dumped = 0 LIMIT 100;")
+	while IFS=, read -r id url; do
+		test "$url" = "" && break
 		dump_site "$url" "$id"
-		echo true > cond
-	done
-	test "$(cat cond)" == "false" && break
+	done <<< "$to_dump"
+	test "$to_dump" == "" && break
 done
 
 echo "error: ran out of websites"
