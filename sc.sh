@@ -7,11 +7,11 @@ extract_urls () {
 }
 dump_site () {
 	url="$1"
-	echo "dumping: $url"
-	output=$(extract_urls "$url")
+	printf "[info]: dumping (\033[34m${url}\033[0m)\n"
+	output=$(extract_urls "${url}")
 	rc=$?
 	if [ $rc -ne 0 ]; then
-		echo "error: dumping $url failed"
+		printf "[error]: dumping (\033[34m${url}\033[0m) failed\n"
 		return
 	fi
 	test "$output" == "" && return
@@ -54,4 +54,4 @@ do
 	test "$to_dump" == "" && break
 done
 
-echo "error: ran out of websites"
+echo "\033[31m[error]: ran out of websites\033[0m"
