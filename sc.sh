@@ -22,7 +22,7 @@ dump_site () {
 		if test "$c" == "0"; then
 			sqlite3 sql.db "INSERT INTO urls (url) VALUES ('${furl}');"
 		else
-			sqlite3 sql.db "UPDATE urls SET referenced = referenced + 1 WHERE url = '${furl}';"
+			sqlite3 sql.db "UPDATE urls SET ref = ref + 1 WHERE url = '${furl}';"
 		fi
 	done <<< "$output"
 }
@@ -31,13 +31,14 @@ sc_init () {
 	if ! test -e sql.db; then
 		sqlite3 sql.db ""
 		sqlite3 sql.db "CREATE TABLE urls (
-			id INTEGER PRIMARY KEY,
-			url TEXT UNIQUE,
-			dumped BOOLEAN DEFAULT '0',
-			referenced INTEGER DEFAULT '1'
+			id     INTEGER PRIMARY KEY,
+			url    TEXT    UNIQUE,
+			dumped BOOLEAN DEFAULT     '0',
+			depth  INTEGER,
+			ref    INTEGER DEFAULT     '1'
 		);"
 		furl="$(echo ${1} | awk -F '?' '{print $1}' | sed -e 's/\/[^/]*\.php//' -e "s/'/''/g")"
-		sqlite3 sql.db "INSERT INTO urls (url, referenced) VALUES ('${1}', '0');"
+		sqlite3 sql.db "INSERT INTO urls (url, ref) VALUES ('${1}', '0');"
 	fi
 }
 
@@ -49,8 +50,8 @@ do
 	while IFS=, read -r id url; do
 		test "$url" == "" && break
 		dump_site "$url" "$id"
-	done <<< "$to_dump"
 	test "$to_dump" == "" && break
+	done <<< "$to_dump"
 done
 
 echo "\033[31m[error]: ran out of websites\033[0m"
