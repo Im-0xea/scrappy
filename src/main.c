@@ -4,8 +4,9 @@
 #include <stdnoreturn.h>
 #include <getopt.h>
 
+#include "logging.h"
+
 bool verbose = false;
-sqlite3 * db;
 
 extern bool init_db(const char *);
 extern void spider(const char *, const char *);
@@ -40,17 +41,19 @@ int main(const int c, char * const * a, char * const * v)
 			db_path = optarg;
 		}
 	}
-	char link[128];
+	char buf_link[128];
+	char * link = NULL;
 	const int chk = init_db(db_path);
-	if (!chk)
+	if (!chk) {
 		if (optind >= c) {
-			fputs(stdout, "Enter Initial Link: ");
-			scanf("%128s\n", link);
+			
+			fputs("Enter Initial Link: ", stdout);
+			if (scanf("%128s\n", buf_link) <= 0)
+				lerror(1, "failed to parse link from stdin");
+			link = buf_link;
 		} else {
-			link = v[opintd];
+			link = v[optind];
 		}
-	} else {
-		link = NULL;
 	}
 	
 	spider(db_path, link);
