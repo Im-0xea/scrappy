@@ -43,8 +43,7 @@ int main(const int c, char * const * a, char * const * v)
 	}
 	char buf_link[128];
 	char * link = NULL;
-	const int chk = init_db(db_path);
-	if (!chk) {
+	if (!init_db(db_path)) {
 		if (optind >= c) {
 			
 			fputs("Enter Initial Link: ", stdout);
